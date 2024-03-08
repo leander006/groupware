@@ -21,7 +21,7 @@ public class EmployeeController {
     public ResponseEntity<?> addEmployee(@Validated @RequestBody Employee employee) {
         try {
             Employee savedEmployee = employeeService.saveEmployee(employee);
-            return ResponseEntity.ok(savedEmployee);
+            return ResponseEntity.ok(savedEmployee.getEmployeeId());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
