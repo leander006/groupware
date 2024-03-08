@@ -78,7 +78,7 @@ public class EmployeeService {
 
             Optional<Employee> existingEmployee = employeeRepository.findByEmployeeName(name);
 
-            if (!existingEmployee.isPresent()) {
+            if (existingEmployee.isPresent()) {
                 throw new IllegalArgumentException("Employee with this name does not exist");
             }
 
