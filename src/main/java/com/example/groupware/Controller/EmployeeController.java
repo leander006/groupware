@@ -5,7 +5,9 @@ import com.example.groupware.Service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 @RestController
@@ -16,7 +18,7 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @PostMapping
-    public ResponseEntity<?> addEmployee(@RequestBody Employee employee) {
+    public ResponseEntity<?> addEmployee(@Validated @RequestBody Employee employee) {
         try {
             Employee savedEmployee = employeeService.saveEmployee(employee);
             return ResponseEntity.ok(savedEmployee);
@@ -69,7 +71,7 @@ public class EmployeeController {
     public ResponseEntity<?> deleteEmployee(@PathVariable String id) {
         try {
             employeeService.deleteEmployeeById(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            return ResponseEntity.status(HttpStatus.OK).body("Employee deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting employee: " + e.getMessage());
         }

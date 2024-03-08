@@ -18,16 +18,14 @@ import java.util.UUID;
 @Slf4j
 public class EmployeeService {
 
-    @Autowired
-
-    private EmployeeRepository employeeRepository;
+    @Autowired private EmployeeRepository employeeRepository;
+    @Autowired private EmailService emailService;
 
     // Create
     public Employee saveEmployee(Employee employee) {
         try {
 
             Optional<Employee> existingEmployee = employeeRepository.findByEmployeeName(employee.getEmployeeName());
-            System.out.println(existingEmployee);
             if (existingEmployee.isPresent()) {
                 throw new IllegalArgumentException("Employee with the same name already exists.");
             }
@@ -35,6 +33,14 @@ public class EmployeeService {
             // Generate unique UUID for the employee
             String employeeId = UUID.randomUUID().toString();
             employee.setEmployeeId(employeeId);
+
+            Optional<Employee> manager = employeeRepository.findById(employee.getReportsTo());
+            System.out.println("employee.getReportsTo() "+employee.getReportsTo()+"manager "+manager.isPresent());
+            if (!manager.isPresent()) {
+                throw new IllegalArgumentException("Manager doesn't exists");
+            }
+
+            emailService.sendNewEmployeeEmail(manager.get().getEmail(),employee.getEmployeeName(),employee.getPhoneNumber(),employee.getEmail());
 
             employeeRepository.save(employee);
 
@@ -53,8 +59,14 @@ public class EmployeeService {
 
         try {
             Optional<Employee> employee = employeeRepository.findById(id);
+            if (!employee.isPresent()) {
+                throw new IllegalArgumentException("Employee with id does not exist");
+            }
             return employee;
-        } catch (Exception e) {
+        }  catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            throw e;
+        }catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -66,12 +78,15 @@ public class EmployeeService {
 
             Optional<Employee> existingEmployee = employeeRepository.findByEmployeeName(name);
 
-            if (existingEmployee.isPresent()) {
-                throw new IllegalArgumentException("Employee with the same name already exists.");
+            if (!existingEmployee.isPresent()) {
+                throw new IllegalArgumentException("Employee with this name does not exist");
             }
 
             return existingEmployee;
-        } catch (Exception e) {
+        }  catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            throw e;
+        }catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -83,6 +98,9 @@ public class EmployeeService {
             Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortBy));
             Page<Employee> employees = employeeRepository.findAll(pageable);
             return employees.getContent();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -138,11 +156,18 @@ public class EmployeeService {
     }
 
     // Delete
-    public void deleteEmployeeById(String id) {
+    public void deleteEmployeeById(String employeeId) {
         try{
-            employeeRepository.deleteById(id);
+            Optional<Employee> existingEmployeeOptional = employeeRepository.findById(employeeId);
+            if (existingEmployeeOptional.isEmpty()) {
+                throw new IllegalArgumentException("Employee with ID " + employeeId + " not found.");
+            }
+            employeeRepository.deleteById(employeeId);
         }
-        catch (Exception e){
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            throw e;
+        } catch (Exception e){
             e.printStackTrace();
         }
     }
@@ -175,5 +200,4 @@ public class EmployeeService {
             return null;
         }
     }
-
 }
