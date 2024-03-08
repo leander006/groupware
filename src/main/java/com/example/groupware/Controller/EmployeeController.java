@@ -18,7 +18,7 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @PostMapping
-    public ResponseEntity<?> addEmployee(@Validated @RequestBody Employee employee) {
+    public ResponseEntity<?> addEmployee(@RequestBody Employee employee) {
         try {
             Employee savedEmployee = employeeService.saveEmployee(employee);
             return ResponseEntity.ok(savedEmployee.getEmployeeId());
@@ -53,8 +53,8 @@ public class EmployeeController {
         }
     }
 
-    @GetMapping("/fetchByName")
-    public ResponseEntity<?> getEmployee(@RequestBody String name) {
+    @GetMapping("/fetchByName/{name}")
+    public ResponseEntity<?> getEmployee(@PathVariable String name) {
         try {
 
             Employee employee = employeeService.getEmployee(name).orElse(null);
