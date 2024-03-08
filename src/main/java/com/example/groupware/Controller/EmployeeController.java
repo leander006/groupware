@@ -39,9 +39,12 @@ public class EmployeeController {
     }
 
     @GetMapping("/fetchAllEmployee")
-    public ResponseEntity<?> getEmployeeById() {
+    public ResponseEntity<?> getEmployeeById(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "employeeName") String sortBy) {
         try {
-            List<Employee> employee = employeeService.getAllEmployees();
+            List<Employee> employee = employeeService.getAllEmployees(page,size,sortBy);
             return ResponseEntity.ok(employee);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
@@ -82,6 +85,18 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
+        }
+    }
+
+    @GetMapping("/{employeeId}/manager/{level}")
+
+    public ResponseEntity<Object> getNthLevelManager(@PathVariable String employeeId, @PathVariable int level){
+        try {
+            Employee employee = employeeService.managerWithNthLevel(employeeId,level);
+            return ResponseEntity.ok(employee);
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
 

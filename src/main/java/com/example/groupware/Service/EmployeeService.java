@@ -4,6 +4,10 @@ import com.example.groupware.Model.Employee;
 import com.example.groupware.Repository.EmployeeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -74,10 +78,11 @@ public class EmployeeService {
     }
 
     // Get all employees
-    public List<Employee> getAllEmployees() {
+    public List<Employee> getAllEmployees(int pageNum, int pageSize, String sortBy) {
         try {
-            List<Employee> employees = employeeRepository.findAll();
-            return employees;
+            Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortBy));
+            Page<Employee> employees = employeeRepository.findAll(pageable);
+            return employees.getContent();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -101,11 +106,23 @@ public class EmployeeService {
             }
 
             // Update the existing employee fields
-            existingEmployee.setEmployeeName(employee.getEmployeeName());
-            existingEmployee.setPhoneNumber(employee.getPhoneNumber());
-            existingEmployee.setEmail(employee.getEmail());
-            existingEmployee.setReportsTo(employee.getReportsTo());
-            existingEmployee.setProfileImage(employee.getProfileImage());
+
+            if(employee.getEmployeeName() != null){
+                existingEmployee.setEmployeeName((employee.getEmployeeName()));
+            }
+
+            if (employee.getPhoneNumber() != null) {
+                existingEmployee.setPhoneNumber(employee.getPhoneNumber());
+            }
+            if (employee.getEmail() != null) {
+                existingEmployee.setEmail(employee.getEmail());
+            }
+            if (employee.getReportsTo() != null) {
+                existingEmployee.setReportsTo(employee.getReportsTo());
+            }
+            if (employee.getProfileImage() != null) {
+                existingEmployee.setProfileImage(employee.getProfileImage());
+            }
 
             // Save the updated employee to the database
             return employeeRepository.save(existingEmployee);
@@ -129,4 +146,34 @@ public class EmployeeService {
             e.printStackTrace();
         }
     }
+
+
+    public Employee managerWithNthLevel(String employeeId,int level){
+        try {
+            Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
+            if (employeeOptional.isEmpty()) {
+                throw new IllegalArgumentException("Employee doesn't have manager at level "+(level+4) );
+            }
+
+            Employee employee = employeeOptional.get();
+            String managerId = employee.getReportsTo();
+
+            // Base case: if the employee is at the top of the hierarchy or level is 0
+            if (managerId == null || level == 0) {
+                return employee;
+            }
+
+            // Recursively find the nth level manager
+            return managerWithNthLevel(managerId, level - 1);
+        }
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            throw e;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
