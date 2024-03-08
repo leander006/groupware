@@ -15,19 +15,18 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Employee {
 
-
     @Id
-    private Integer employeeId = UUID.randomUUID().hashCode();
+    private String employeeId;
 
     private String employeeName;
 
     private Long phoneNumber;
 
-    private String  email;
+    private String email;
 
-    private Integer  reportsTo;
+    private String reportsTo;
 
-    private String  profileImage;
+    private String profileImage;
 
 
 }
